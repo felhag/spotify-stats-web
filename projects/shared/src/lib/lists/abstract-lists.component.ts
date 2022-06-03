@@ -1,7 +1,7 @@
 import { OnInit, Directive } from '@angular/core';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BehaviorSubject } from 'rxjs';
-import { TempStats, Streak, StreakStack, StreakItem, Month } from 'projects/shared/src/lib/app/model';
+import { TempStats, Streak, StreakStack, StreakItem } from 'projects/shared/src/lib/app/model';
 import { SettingsService } from 'projects/shared/src/lib/service/settings.service';
 import { StatsBuilderService } from 'projects/shared/src/lib/service/stats-builder.service';
 import { AbstractUrlService } from '../service/abstract-url.service';
@@ -39,8 +39,8 @@ export abstract class AbstractListsComponent<S> implements OnInit {
               getItem: (k: string) => T,
               buildName: (item: T, value: number) => string,
               buildDescription: (item: T, value: number) => string,
-              buildUrl?: (T: any) => string,
-              buildDate?: (T: any) => Date,
+              buildUrl?: (t: T) => string,
+              buildDate?: (t: T) => Date,
   ): Top10Item[] {
     const keys: [string, number][] = Object.keys(countMap).map(k => [k, getValue(getItem(k))]);
     keys.sort((a, b) => b[1] - a[1]);
@@ -86,12 +86,11 @@ export abstract class AbstractListsComponent<S> implements OnInit {
   protected abstract emptyStats(): S;
 
   protected calculateGaps(stats: TempStats,
-                          seenThingies: { [key: string]: StreakItem },
+                          seen: StreakItem[],
                           between: StreakStack,
                           include: 'album' | 'track' | undefined,
                           url: (s: Streak) => string): [Top10Item[], Top10Item[]] {
     const threshold = this.settings.minScrobbles.value || 0;
-    const seen = Object.values(seenThingies).filter(a => a.scrobbles.length >= threshold);
     const seenStrings = seen.map(a => a.name);
     const toString = (s: Streak) => s.start.artist + (include ? ' - ' + s.start[include] : '');
     const ba = between.streaks.filter(s => !threshold || seenStrings.indexOf(toString(s)) >= 0);
@@ -134,15 +133,33 @@ export abstract class AbstractListsComponent<S> implements OnInit {
     }
   }
 
+  protected seenThreshold<T extends StreakItem>(seenThingies: { [key: string]: T }): T[] {
+    const threshold = this.threshold;
+    return Object.values(seenThingies).filter(a => a.scrobbles.length >= threshold);
+  }
+
+  protected forceThreshold<T extends StreakItem>(seen: T[]): T[] {
+    return this.threshold > 0 ? seen : seen.filter(s => s.scrobbles.length >= this.forcedThreshold);
+  }
+
+  protected get threshold(): number {
+    return this.settings.minScrobbles.value || 0;
+  }
+
+  protected abstract get forcedThreshold(): number;
+
+  get minimumForcedThreshold(): number {
+    return Math.max(this.threshold, this.forcedThreshold);
+  }
+
   public getRankings<T extends StreakItem>(
-    countMap: { [p: string]: T },
-    monthList: Month[],
+    seen: T[],
+    monthList: {alias: string, date: Date}[],
     url: (item: T, month: string) => string,
-  )
-  : { climbers: Top10Item[]; fallers: Top10Item[] } {
+  ): { climbers: Top10Item[]; fallers: Top10Item[] } {
     const climbers: Top10Item[] = [];
     const fallers: Top10Item[] = [];
-    Object.values(countMap).filter(c => c.ranks.length > 1).forEach(item => {
+    seen.filter(c => c.ranks.length > 1).forEach(item => {
       item.ranks.forEach((rank, idx) => {
         const diff = item.ranks[idx + 1] - rank;
         if (diff < 0) {
@@ -155,7 +172,7 @@ export abstract class AbstractListsComponent<S> implements OnInit {
     return { fallers: fallers.splice(0, this.listSize), climbers: climbers.splice(0, this.listSize) };
   }
 
-  private addGap<T extends StreakItem>(gaps: Top10Item[], diff: number, item: T, month: Month, url: (item: T, month: string) => string): void {
+  private addGap<T extends StreakItem>(gaps: Top10Item[], diff: number, item: T, month: {alias: string, date: Date}, url: (item: T, month: string) => string): void {
     let i = 0;
     while (gaps[i]?.amount > diff && i < 10) {
       i++;
