@@ -1,6 +1,6 @@
 {
-  "name": "Last.fm stats",
-  "description": "Enhanced statistics for last.fm",
+  "name": "Spotify stats",
+  "description": "Enhanced statistics for spotify",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -30,6 +30,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#b90000",
-  "theme_color": "#b90000"
+  "background_color": "#1DB954",
+  "theme_color": "#1DB954"
 }
