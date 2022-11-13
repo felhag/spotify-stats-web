@@ -2,8 +2,8 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgxCsvParser } from 'ngx-csv-parser';
 import { Export, Scrobble } from 'projects/shared/src/lib/app/model';
-import { AbstractItemRetriever } from 'projects/shared/src/lib/service/abstract-item-retriever.service';
 import { Subject, BehaviorSubject } from 'rxjs';
+import { ScrobbleImporter } from '../../../../shared/src/lib/service/scrobble-importer.service';
 
 @Component({
   selector: 'app-home',
@@ -18,7 +18,7 @@ export class HomeComponent {
 
   constructor(private router: Router,
               private ngxCsvParser: NgxCsvParser,
-              private retriever: AbstractItemRetriever) {
+              private importer: ScrobbleImporter) {
   }
 
   update(ev: Event): void {
@@ -27,7 +27,7 @@ export class HomeComponent {
 
   go(): void {
     if (this.username) {
-      this.router.navigateByUrl(`/user/${this.username.trim().toLowerCase()}`);
+      this.start(this.username.trim().toLowerCase(), []);
     } else {
       this.valid.next(false);
     }
@@ -50,16 +50,13 @@ export class HomeComponent {
           }
 
           const username = headers[length - 1].substr(headers[length - 1].indexOf('#') + 1);
-          const hasAlbum = length === 4;
-          if (hasAlbum || !this.continueWithoutAlbums(username)) {
-            const scrobbles = (csvArray as any[]).map(arr => ({
-              artist: arr[0],
-              album: hasAlbum ? arr[1] : undefined,
-              track: arr[hasAlbum ? 2 : 1],
-              date: new Date(parseInt(arr[hasAlbum ? 3 : 2]))
-            }));
-            this.handleImport(username, scrobbles);
-          }
+          const scrobbles = (csvArray as any[]).map(arr => ({
+            artist: arr[0],
+            album: arr[1],
+            track: arr[2],
+            date: new Date(parseInt(arr[3]))
+          }));
+          this.start(username, scrobbles);
         },
         error: (error: any) => this.importError.next('Can\t parse csv: ' + error.message)
       });
@@ -69,7 +66,7 @@ export class HomeComponent {
         const parsed = this.parseJSON(reader.result as string);
         if (parsed) {
           const scrobbles = parsed.scrobbles.map(s => ({track: s.track, artist: s.artist, album: s.album, date: new Date(s.date)}));
-          this.handleImport(parsed.username, scrobbles);
+          this.start(parsed.username, scrobbles);
         }
       };
       reader.readAsText(file);
@@ -78,33 +75,13 @@ export class HomeComponent {
     }
   }
 
-  private handleImport(username: string, scrobbles: Scrobble[]): void {
-    this.retriever.imported = scrobbles;
+  private start(username: string, scrobbles: Scrobble[]): void {
+    this.importer.import(scrobbles);
     this.router.navigate([`/user/${username}`]);
   }
 
   private parseJSON(data: string): Export | undefined {
-    const parsed = JSON.parse(data) as Export;
-    const hasAlbum = parsed.scrobbles.length && parsed.scrobbles.some(r => r.album);
-    if (hasAlbum) {
-      // 2.0+ format
-      return parsed;
-    } else {
-      if (this.continueWithoutAlbums(parsed.username)) {
-        return undefined;
-      } else {
-        return parsed;
-      }
-    }
-  }
-
-  private continueWithoutAlbums(username: string): boolean {
-    if (confirm('File does not contain albums, do you want to reload data to include albums as well?')) {
-      this.username = username;
-      this.go();
-      return true;
-    }
-    return false;
+    return JSON.parse(data) as Export;
   }
 
   get christmas(): boolean {

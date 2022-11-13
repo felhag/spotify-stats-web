@@ -39,6 +39,12 @@
       padding: 0;
     }
   }
+
+  .or {
+    font-size: .75rem;
+    letter-spacing: 1px;
+    padding: 0 20px;
+  }
 }
 
 @mixin color($theme) {

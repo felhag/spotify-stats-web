@@ -1,37 +1,40 @@
 import { Component, OnInit, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AbstractItemRetriever } from 'projects/shared/src/lib/service/abstract-item-retriever.service';
-import { combineLatest, Observable } from 'rxjs';
-import { map, filter, finalize } from 'rxjs/operators';
+import { UntilDestroy } from '@ngneat/until-destroy';
+import { State, App, User } from 'projects/shared/src/lib/app/model';
 import { ConfComponent } from 'projects/shared/src/lib/conf/conf.component';
-import { Progress, State, App } from 'projects/shared/src/lib/app/model';
 import { SettingsService } from 'projects/shared/src/lib/service/settings.service';
 import { StatsBuilderService } from 'projects/shared/src/lib/service/stats-builder.service';
 import { UsernameService } from 'projects/shared/src/lib/service/username.service';
+import { combineLatest, Observable, take, switchMap, filter } from 'rxjs';
+import { DateColorsService } from '../service/date-colors.service';
+import { ScrobbleManager } from '../service/scrobble-manager.service';
+import { ScrobbleStore } from '../service/scrobble.store';
 
 @UntilDestroy()
 @Component({
   selector: 'app-stats',
   templateUrl: './stats.component.html',
   styleUrls: ['./stats.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [ScrobbleManager, ScrobbleStore, DateColorsService, StatsBuilderService]
 })
 export class StatsComponent implements OnInit, OnDestroy {
   readonly tabs: string[];
   private activeTab: string = 'artists';
   private start?: [number, number, number];
-  progress!: Progress;
-  settingCount = new Observable<number>();
+  state$!: Observable<State>;
+  user$!: Observable<User | undefined>;
 
-  constructor(private retriever: AbstractItemRetriever,
-              private builder: StatsBuilderService,
+  constructor(private builder: StatsBuilderService,
+              private scrobbles: ScrobbleStore,
+              private manager: ScrobbleManager,
               public settings: SettingsService,
               private usernameService: UsernameService,
               private router: Router,
               private dialog: MatDialog,
-              private app: App) {
+              private app: App,) {
     if (this.app === App.lastfm) {
       this.tabs = ['artists', 'albums', 'tracks', 'scrobbles', 'charts', 'dataset'];
     } else  {
@@ -40,38 +43,17 @@ export class StatsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.builder.update([], false);
-    this.progress = this.retriever.retrieveFor(this.username!);
-    this.progress.loader.pipe(
-      untilDestroyed(this),
-      filter((s, idx) => idx === 0 || this.settings.autoUpdate.value),
-      finalize(() => this.rebuildWithoutAutoUpdate())
-    ).subscribe(s => this.builder.update(s, true));
-
-    this.settingCount = combineLatest([
-      this.settings.dateRangeStart,
-      this.settings.dateRangeEnd,
-      this.settings.artists,
-      this.settings.minScrobbles]).pipe(map(([start, end, artists, min]) => {
-      return (start || end ? 1 : 0) + (artists.length ? 1 : 0) + (min ? 1 : 0);
-    }));
+    this.manager.start(this.usernameService.username!);
+    this.state$ = this.scrobbles.state;
+    this.user$ = this.scrobbles.user;
   }
 
   ngOnDestroy(): void {
-    this.progress.state.next('INTERRUPTED');
-  }
-
-  private rebuildWithoutAutoUpdate(): void {
-    if (!this.settings.autoUpdate.value && this.progress.state.value !== 'INTERRUPTED') {
-      this.rebuild();
-    } else {
-      this.builder.finish();
-    }
+    this.scrobbles.finish('INTERRUPTED');
   }
 
   rebuild(): void {
-    this.builder.update(this.progress.allScrobbles, false);
-    this.builder.finish();
+    this.builder.rebuild.next();
   }
 
   showContent(state: State): boolean {
@@ -79,9 +61,16 @@ export class StatsComponent implements OnInit, OnDestroy {
   }
 
   openSettings(): void {
-    const width = window.innerWidth;
-    const minWidth = width > 1200 ? 1000 : width - 48;
-    this.dialog.open(ConfComponent, {minWidth}).afterClosed().subscribe(() => this.rebuild());
+    combineLatest([this.scrobbles.scrobbles, this.settings.state$]).pipe(
+      take(1),
+      switchMap(([scrobbles, settings]) => {
+        const width = window.innerWidth;
+        const minWidth = width > 1200 ? 1000 : width - 48;
+        const data = {scrobbles, settings};
+        return this.dialog.open(ConfComponent, {minWidth, data}).afterClosed();
+      }),
+      filter(result => !!result)
+    ).subscribe(result => this.settings.update(result));
   }
 
   get username(): string {

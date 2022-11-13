@@ -22,15 +22,18 @@
   </div>
   <div class="home-row mw">
     <div class="line"></div>
-    <div class="or">OR</div>
+    <div class="or">or import from</div>
     <div class="line"></div>
   </div>
   <div class="home-row">
-    <button mat-flat-button (click)="uploadFile.click()">
-      📁   Import a file
-    </button>
-    <input #uploadFile (change)="import($event)" type='file' style="display:none">
+    <app-db-load-button>
+      <button mat-flat-button (click)="uploadFile.click()">
+        📁 File
+      </button>
+      <input #uploadFile (change)="import($event)" type='file' style="display:none">
+    </app-db-load-button>
   </div>
+
 
   <app-buttons [showHome]="false"></app-buttons>
 </mat-card>
