@@ -16,7 +16,7 @@
   font-size: 16px;
   width: 100%;
 
-  .mat-form-field {
+  .mat-mdc-form-field {
     width: 100%;
   }
 }
@@ -33,7 +33,7 @@
   overflow-x: visible;
   line-height: initial;
 
-  .mat-nav-list {
+  .mat-mdc-nav-list {
     min-width: 100%;
     max-height: 288px;
     overflow-y: auto;
@@ -45,14 +45,6 @@
   font-size: 16px;
   line-height: 16px;
   margin-top: 12px;
-}
-
-::ng-deep .custom-dropzone .mat-list-item-content {
-  flex-direction: row-reverse !important;
-
-  a {
-    margin-right: 12px;
-  }
 }
 
 ngx-dropzone-preview {

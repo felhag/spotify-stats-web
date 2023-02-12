@@ -2,7 +2,7 @@
   width: 100%;
 }
 
-.spinner-wrapper {
+.content-state .mat-mdc-card-content, .mat-mdc-card-actions {
   display: flex;
   justify-content: center;
 }
@@ -21,17 +21,13 @@ app-buttons {
   margin-left: auto;
 }
 
-.mat-card {
+.mat-mdc-card {
   margin: 16px;
   flex: 1 1 0;
   min-width: 0;
 }
 
-.scrobble-header {
-  margin: 16px;
-}
-
-.mat-card-subtitle {
+.mat-mdc-card-subtitle {
   margin: 16px 0 0 0 !important;
 }
 
@@ -52,13 +48,13 @@ app-buttons {
   }
 }
 
-.mat-tab-group {
+.mat-mdc-tab-group {
   width: 100%;
 }
 
 
 @media screen and (max-width: 575px) {
-  .mat-card-header {
+  .mat-mdc-card-header {
     flex-direction: column;
   }
 }

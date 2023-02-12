@@ -60,6 +60,10 @@ export class StatsComponent implements OnInit, OnDestroy {
     return state === 'INTERRUPTED' || state === 'COMPLETED' || state === 'RETRIEVING' || state === 'LOADSTUCK';
   }
 
+  isStuck(state: State): boolean {
+    return state === 'USERNOTFOUND' || state === 'LOADFAILEDDUEPRIVACY' || state === 'LOADFAILED';
+  }
+
   openSettings(): void {
     combineLatest([this.scrobbles.scrobbles, this.settings.state$]).pipe(
       take(1),
@@ -113,5 +117,16 @@ export class StatsComponent implements OnInit, OnDestroy {
 
   get isLastfm(): boolean {
     return this.app === App.lastfm;
+  }
+
+  getContentStateFor(state: State): string {
+    switch (state) {
+      case 'LOADINGUSER': return `🔎 Looking for ${this.username}...`;
+      case 'CALCULATINGPAGES': return `👨‍🔬 ${this.username} found, calculating pages...`;
+      case 'USERNOTFOUND': return `Username ${this.username} not found 😥`;
+      case 'LOADFAILEDDUEPRIVACY': return '🔏 Your recent listening information is not publicly visible. You can change this&nbsp;<a href="https://last.fm/settings/privacy" target="_blank">here</a>.';
+      case 'LOADFAILED': return 'Can\'t reach lastfm API. Maybe there is an adblocker which is blocking the requests?';
+      default: return '';
+    }
   }
 }

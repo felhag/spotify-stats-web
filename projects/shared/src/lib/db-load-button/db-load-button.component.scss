@@ -6,32 +6,31 @@ app-db-load-button {
 .buttons {
   text-align: center;
 
-  .mat-select, button {
+  .mat-mdc-select, button {
     width: 50%;
     font-size: 1rem;
   }
 }
 
-.mat-select {
-  .mat-select-value {
+.mat-mdc-select {
+  .mat-mdc-select-value {
     text-align: center;
   }
-
-  .mat-select-placeholder {
+  .mat-mdc-select-placeholder, mat-mdc-select-value {
     color: inherit;
   }
-
-  .mat-select-arrow-wrapper {
+  .mat-mdc-select-arrow-wrapper {
     display: none;
   }
 }
 
-.mat-option .db-user-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  .mat-icon {
-    margin-right: 0;
+.mat-mdc-option {
+  .mdc-list-item__primary-text {
+    min-width: calc(100% + 16px);
+  }
+  .db-user-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }
