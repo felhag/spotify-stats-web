@@ -33,12 +33,18 @@ export class CumulativeItemsChart extends ToggleableChart {
   }
 
   update(stats: TempStats): void {
+    super.update(stats);
     if (!this.chart) {
       return;
     }
-    super.update(stats);
 
-    const months = [{alias: 'Account created', artists: new Map(), date: new Date()}, ...Object.values(stats.monthList)];
+    const months = [{
+      alias: 'Account created',
+      artists: new Map(),
+      albums: new Map(),
+      tracks: new Map(),
+      date: new Date()
+    }, ...Object.values(stats.monthList)];
     const series = [...this.chart!.series];
     const arr = this.mapper.seen(this.type, stats);
 
@@ -63,5 +69,10 @@ export class CumulativeItemsChart extends ToggleableChart {
 
     series.forEach(s => s.remove(false));
     this.chart.update({xAxis: {categories: months.map(m => m.alias)}} as any, true);
+  }
+
+  protected load(container: HTMLElement) {
+    super.load(container);
+    this.update(this.stats!);
   }
 }
