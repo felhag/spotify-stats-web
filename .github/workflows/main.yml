@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - uses: actions/setup-node@v3
       with:
         node-version: '18'
@@ -28,7 +28,7 @@ jobs:
         cp dist/spotify-stats/index.html dist/spotify-stats/404.html
 
     - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4.4.1
+      uses: JamesIves/github-pages-deploy-action@v4.4.3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
