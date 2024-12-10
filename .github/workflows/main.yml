@@ -25,12 +25,12 @@ jobs:
       run: |
         npm install --legacy-peer-deps
         npm run-script deploy
-        cp dist/spotify-stats/index.html dist/spotify-stats/404.html
+        cp dist/spotify-stats/browser/index.html dist/spotify-stats/browser/404.html
 
     - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4.6.3
+      uses: JamesIves/github-pages-deploy-action@v4.7.2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
-        folder: dist/spotify-stats
+        folder: dist/spotify-stats/browser
         target-folder: docs
