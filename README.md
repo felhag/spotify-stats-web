@@ -3,7 +3,14 @@ A small project to show some additional statistics for spotify: https://spotifys
 
 **Duplicate from https://github.com/felhag/lastfm-stats-web**
 
-## Prepare release (sync from lastfm-stats)
+## 🚀 Run locally
+```
+docker build -t spotify-stats .
+docker run -p 4200:4200 spotify-stats
+```
+This will serve spotify-stats on http://localhost:4200
+
+## 🔨 Prepare release (sync from lastfm-stats)
 ```
 set TAGNAME=5.8
 git fetch lastfm-stats-web & 
