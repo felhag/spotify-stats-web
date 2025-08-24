@@ -28,7 +28,7 @@ jobs:
         cp dist/spotify-stats/browser/index.html dist/spotify-stats/browser/404.html
 
     - name: Deploy
-      uses: JamesIves/github-pages-deploy-action@v4.7.2
+      uses: JamesIves/github-pages-deploy-action@v4.7.3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
