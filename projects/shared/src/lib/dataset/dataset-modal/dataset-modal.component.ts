@@ -50,10 +50,10 @@ export class DatasetModalComponent implements OnInit {
     const months = this.data.months;
     const highestMonthly = Math.min(
       ...Object.values(months)
-        .map(m => this.mapper
-          .monthItems(this.entry.type, m)
-          .sort((a, b) => a.count > b.count ? -1 : 1)
-          .findIndex(m => m.name === this.data.entry.item.name) + 1)
+        .map(m =>
+          this.mapper.monthItems(this.entry.type, m)
+            .sort((a, b) => a.count > b.count ? -1 : 1)
+            .indexOf(this.mapper.monthItem(this.entry.type, m, this.entry.item)) + 1)
         .filter(idx => idx > 0)
     )
     const ranks: (number | null)[] = [];
@@ -66,7 +66,7 @@ export class DatasetModalComponent implements OnInit {
     this.options = [
       this.circleOption(scrobblesTitle, this.entry.scrobbles),
       this.entry.tracks ? this.circleOption('Tracks', this.entry.tracks) : undefined,
-      this.circleOption('Weeks', this.entry.item.weeks.length),
+      this.circleOption('Weeks', this.entry.item.weeks.size),
       this.circleOption('Highest rank', Math.min(...ranks.filter(r => r).map(r => r!))),
       this.circleOption('Highest monthly', highestMonthly)
     ];

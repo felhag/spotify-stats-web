@@ -28,7 +28,7 @@ export interface Scrobble {
 }
 
 export interface StreakItem {
-  weeks: string[];
+  weeks: Set<string>;
   name: string;
   betweenStreak: Streak;
   avgScrobble: number;
@@ -37,7 +37,7 @@ export interface StreakItem {
 }
 
 export interface Artist extends StreakItem {
-  tracks: string[];
+  tracks: Set<string>;
 }
 
 export interface Album extends StreakItem {
@@ -65,6 +65,17 @@ export interface MonthItem {
   name: string;
   count: number;
   new?: Scrobble;
+}
+
+export interface ZScoreEntry {
+  key: string;
+  artist: string;
+  name: string;
+  plays: number;
+  mean: number;
+  std: number;
+  z: number;
+  historyCount: number;
 }
 
 export interface Export {
