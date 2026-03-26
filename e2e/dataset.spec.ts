@@ -27,7 +27,7 @@ test.describe('Dataset tab', () => {
     await expect(page.locator('th').filter({ hasText: 'Rank' })).toBeVisible();
     // "Name" column header shows the groupedBy value (e.g. "Artist") via titlecase pipe
     await expect(page.locator('th').filter({ hasText: 'Artist' })).toBeVisible();
-    await expect(page.locator('th').filter({ hasText: 'Scrobbles' })).toBeVisible();
+    await expect(page.locator('th').filter({ hasText: 'Plays' })).toBeVisible();
   });
 
   test('displays tracks column when grouped by artist', async ({ page }) => {
@@ -48,6 +48,8 @@ test.describe('Dataset tab', () => {
   });
 
   test('search filters the table', async ({ page }) => {
+    // Wait for table data to load before capturing initial count
+    await expect(page.locator('tr.mat-mdc-row').first()).toBeVisible();
     const rowsBefore = await page.locator('tr.mat-mdc-row').count();
     const searchInput = page.getByPlaceholder('Search artist...');
     await searchInput.fill('Clannad');

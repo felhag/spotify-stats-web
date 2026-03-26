@@ -14,29 +14,29 @@ test.describe('General component', () => {
     await expect(page.locator('dd').filter({ hasText: 'testuser' })).toBeVisible();
   });
 
-  test('displays first and last scrobble', async () => {
-    // First scrobble should show the date and artist/track info
-    const firstDt = page.getByText('First scrobble', {exact: true});
+  test('displays first and last play', async () => {
+    // First play should show the date and artist/track info
+    const firstDt = page.getByText('First play', {exact: true});
     await expect(firstDt).toBeVisible();
-    // The first scrobble is from 2005 by Clannad - Drifting
+    // The first play is from 2005 by Clannad - Drifting
     await expect(page.locator('dd').filter({ hasText: 'Clannad' }).first()).toBeVisible();
 
-    const lastDt = page.getByText('Last scrobble');
+    const lastDt = page.getByText('Last play');
     await expect(lastDt).toBeVisible();
   });
 
-  test('displays days since first scrobble', async () => {
-    const daysDt = page.getByText('Days since first scrobble');
+  test('displays days since first play', async () => {
+    const daysDt = page.getByText('Days since first play');
     await expect(daysDt).toBeVisible();
-    // The value should be a large number (first scrobble was 2005)
+    // The value should be a large number (first play was 2005)
     const daysDd = daysDt.locator('~ dd').first();
     const text = await daysDd.textContent();
     const days = parseInt(text!.trim().replace(/,/g, ''));
     expect(days).toBeGreaterThan(5000);
   });
 
-  test('displays days scrobbled with percentage', async () => {
-    const daysDt = page.getByText('Days scrobbled');
+  test('displays days played with percentage', async () => {
+    const daysDt = page.getByText('Days played');
     await expect(daysDt).toBeVisible();
     const daysDd = daysDt.locator('~ dd').first();
     const text = await daysDd.textContent();
@@ -109,7 +109,7 @@ test.describe('General component', () => {
     const dd = dt.locator('~ dd').first();
     const text = await dd.textContent();
     // Should contain a year between 2005-2012 and a scrobble count
-    expect(text).toMatch(/20\d{2}.*\d+.*scrobbles/);
+    expect(text).toMatch(/20\d{2}.*\d+.*plays/);
   });
 
   test('displays most popular month', async () => {
@@ -118,7 +118,7 @@ test.describe('General component', () => {
     const dd = dt.locator('~ dd').first();
     const text = await dd.textContent();
     // Should contain a month name and scrobble count
-    expect(text).toMatch(/\w+\s+20\d{2}.*\d+.*scrobbles/);
+    expect(text).toMatch(/\w+\s+20\d{2}.*\d+.*plays/);
   });
 
   test('displays every year artists with dialog', async () => {

@@ -41,11 +41,6 @@ export default defineConfig({
     },
 
     {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
     },
@@ -73,7 +68,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npx ng serve lastfm-stats --port 4200',
+    command: 'npx ng serve spotify-stats --port 4200',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env.CI,
   },

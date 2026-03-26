@@ -12,8 +12,8 @@ test.describe('Albums tab', () => {
     expect(count).toBeGreaterThanOrEqual(6);
   });
 
-  test('displays tracks without album (lastfm specific)', async ({ page }) => {
-    await expect(page.getByText('Tracks without album')).toBeVisible();
+  test('does not display tracks without album (lastfm specific)', async ({ page }) => {
+    await expect(page.getByText('Tracks without album')).not.toBeVisible();
   });
 
   test('list cards contain list items', async ({ page }) => {

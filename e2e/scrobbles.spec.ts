@@ -1,8 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Scrobbles tab', () => {
+test.describe('Plays tab', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/user/testuser/scrobbles');
+    await page.goto('/user/testuser/plays');
     await expect(page.locator('app-top10list').first()).toBeVisible();
   });
 

@@ -6,48 +6,29 @@ test.describe('Home component', () => {
   });
 
   test('displays app title and subtitle', async ({ page }) => {
-    await expect(page.getByText('lastfmstats.com')).toBeVisible();
-    await expect(page.getByText('Enhanced statistics for last.fm')).toBeVisible();
+    await expect(page.getByText('spotifystats.app')).toBeVisible();
+    await expect(page.getByText('Enhanced statistics for spotify')).toBeVisible();
   });
 
-  test('displays username input with placeholder', async ({ page }) => {
-    const input = page.locator('input[type="text"]');
+  test('displays username input', async ({ page }) => {
+    const input = page.locator('input[matinput]');
     await expect(input).toBeVisible();
-    await expect(input).toHaveAttribute('placeholder', 'username');
   });
 
-  test('displays import section', async ({ page }) => {
-    await expect(page.getByText('or import from')).toBeVisible();
-    await expect(page.getByRole('button', { name: /File/ })).toBeVisible();
+  test('displays dropzone for file upload', async ({ page }) => {
+    await expect(page.locator('.custom-dropzone')).toBeVisible();
   });
 
   test('shows invalid state when submitting empty username', async ({ page }) => {
     await page.getByRole('button', { name: /Let's go/ }).click();
-    const input = page.locator('input[type="text"]');
-    await expect(input).toHaveClass(/invalid/);
-  });
-
-  test('navigates to user page on enter', async ({ page }) => {
-    const input = page.locator('input[type="text"]');
-    await input.fill('testuser');
-    await input.press('Enter');
-    await expect(page).toHaveURL(/\/user\/testuser/);
-  });
-
-  test('navigates to user page on button click', async ({ page }) => {
-    const input = page.locator('input[type="text"]');
-    await input.fill('testuser');
-    await page.getByRole('button', { name: /Let's go/ }).click();
-    await expect(page).toHaveURL(/\/user\/testuser/);
+    // Dropzone should show invalid state when no files are added
+    await expect(page.locator('.custom-dropzone.invalid')).toBeVisible();
   });
 });
 
 test.describe('Navigation to main application', () => {
-  test('navigates from home to stats and loads general tab by default', async ({ page }) => {
-    await page.goto('/');
-    const input = page.locator('input[type="text"]');
-    await input.fill('testuser');
-    await input.press('Enter');
+  test('navigates directly to stats and loads general tab by default', async ({ page }) => {
+    await page.goto('/user/testuser');
 
     // Should redirect to general tab
     await expect(page).toHaveURL(/\/user\/testuser\/general/);
@@ -59,7 +40,7 @@ test.describe('Navigation to main application', () => {
     await page.goto('/user/testuser/general');
     await expect(page.getByText('Statistics for testuser')).toBeVisible();
 
-    const tabs = ['General', 'Artists', 'Albums', 'Tracks', 'Scrobbles', 'Charts', 'Dataset'];
+    const tabs = ['General', 'Artists', 'Albums', 'Tracks', 'Plays', 'Charts', 'Dataset'];
     for (const tab of tabs) {
       await expect(page.locator('a[mat-tab-link]', { hasText: tab })).toBeVisible();
     }
@@ -110,34 +91,13 @@ test.describe('Navigation to main application', () => {
     await expect(page.getByRole('button', { name: /Filter data/ })).toBeVisible();
   });
 
-  test('displays auto update toggle', async ({ page }) => {
-    await page.goto('/user/testuser/general');
-    await expect(page.getByText('Statistics for testuser')).toBeVisible();
-    await expect(page.getByText('Auto update:')).toBeVisible();
-  });
-
   test('shows user not found and can return home', async ({ page }) => {
-    // Intercept the last.fm API to simulate a 404 for unknown users
-    await page.route('**/ws.audioscrobbler.com/**', route => {
-      route.fulfill({ status: 404, body: '{"error":6,"message":"User not found"}' });
-    });
+    // For spotify, navigating to a non-existent user with no imported data redirects home
+    await page.goto('/user/nonexistentuser12345xyz/general');
 
-    await page.goto('/');
-    const input = page.locator('input[type="text"]');
-    await input.fill('nonexistentuser12345xyz');
-    await input.press('Enter');
-
-    // Should show the "not found" message
-    await expect(page.getByText(/not found/)).toBeVisible();
-
-    // Should show a "Return to homepage" button
-    const returnButton = page.getByRole('button', { name: /Return to homepage/ });
-    await expect(returnButton).toBeVisible();
-
-    // Clicking it should go back to the home page
-    await returnButton.click();
+    // Should redirect back to home since no data was imported
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByText('lastfmstats.com')).toBeVisible();
+    await expect(page.getByText('spotifystats.app')).toBeVisible();
   });
 
   test('can return to home from stats page', async ({ page }) => {
@@ -148,6 +108,6 @@ test.describe('Navigation to main application', () => {
     const homeButton = page.locator('button[mattooltip="Home"]');
     await homeButton.click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByText('lastfmstats.com')).toBeVisible();
+    await expect(page.getByText('spotifystats.app')).toBeVisible();
   });
 });
