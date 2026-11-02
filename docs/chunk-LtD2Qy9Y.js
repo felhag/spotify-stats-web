@@ -1,1 +1,0 @@
-import"./chunk-iBseTmY8.js";import{j as c}from"./main-ZFPUUA5I.js";export{c as TranslatePipe};
